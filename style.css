@@ -5,33 +5,17 @@ body {
   }
   
   #camera-container {
-    position: relative; /* critical for absolute children */
-    width: 320px;
-    height: 426px;
+    width: fit-content;
     margin: 1em auto;
     border: 1px solid #ccc;
     background: #000;
-    overflow: hidden; /* ensures frame stays inside */
   }
   
   #video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     display: block;
+    object-fit: cover;
   }
-  
-  #frame {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: 3px solid red;
-    pointer-events: none;
-    z-index: 10; /* ensures it's on top */
-    box-sizing: border-box;
-    display: none; /* gets turned on by JS */
-  }
+
   
   
   #mode-buttons {

@@ -5,7 +5,8 @@ const resultImg = document.getElementById('result');
 const canvas = document.getElementById('canvas');
 const downloadLink = document.getElementById('download-link');
 const modeButtons = document.querySelectorAll('.mode-btn');
-
+const originalWidth = video.videoWidth;
+const originalHeight = video.videoHight;
 const DPI = 300;
 
 // Sizes in cm (width x height), per your request:
@@ -25,22 +26,12 @@ function cmToPx(cm) {
 
 // Update frame size/position based on current mode and video container
 function updateFrame() {
-  const frameStyle = video.style;
-  const container = video.getBoundingClientRect();
+  const { width, height } = sizeCm[currentMode];
+  const pxWidth = cmToPx(width);
+  const pxHeight = cmToPx(height);
 
-  // Convert size in cm to px at 300dpi
-  const targetWidth = cmToPx(sizeCm[currentMode].width);
-  const targetHeight = cmToPx(sizeCm[currentMode].height);
-
-  // Scale to match the displayed video size
-  const scaleX = video.clientWidth / video.videoWidth;
-  const scaleY = video.clientHeight / video.videoHeight;
-
-  const displayWidth = targetWidth * scaleX;
-  const displayHeight = targetHeight * scaleY;
-
-  frameStyle.width = `${displayWidth}px`;
-  frameStyle.height = `${displayHeight}px`;
+  video.style.width = `${pxWidth}px`;
+  video.style.height = `${pxHeight}px`;
 }
 
 // Start camera
