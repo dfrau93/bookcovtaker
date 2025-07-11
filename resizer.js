@@ -1,5 +1,5 @@
 const video = document.getElementById('video');
-//const frame = document.getElementById('frame');
+const frame = document.getElementById('frame');
 const captureBtn = document.getElementById('capture');
 const resultImg = document.getElementById('result');
 const canvas = document.getElementById('canvas');
@@ -24,16 +24,23 @@ function cmToPx(cm) {
   return Math.round((cm / 2.54) * DPI);
 }
 
-// Update frame size/position based on current mode and video container
-function updateFrame() {
-  const { width, height } = sizeCm[currentMode];
-  const pxWidth = cmToPx(width);
-  const pxHeight = cmToPx(height);
 
-  video.style.width = `${pxWidth}px`;
-  video.style.height = `${pxHeight}px`;
-  video.setAttribute('width', pxWidth);
-  video.setAttribute('height', pxHeight);
+function updateFrame() {
+  const targetWidth = cmToPx(sizeCm[currentMode].width);
+  const targetHeight = cmToPx(sizeCm[currentMode].height);
+
+  const scaleX = video.clientWidth / video.videoWidth;
+  const scaleY = video.clientHeight / video.videoHeight;
+
+  const displayWidth = targetWidth * scaleX;
+  const displayHeight = targetHeight * scaleY;
+
+  frame.style.width = `${displayWidth}px`;
+  frame.style.height = `${displayHeight}px`;
+  frame.style.display = 'block';
+  frame.setAttribute('width', pxWidth);
+  frame.setAttribute('height', pxHeight);
+  frame.setAttribute('display', 'block');
 }
 
 // Start camera
