@@ -17,11 +17,16 @@ const sizeCm = {
   spine: { width: 0.3, height: 2.1 }
 };
 
-const DPI_OUTPUT = 300; // final output DPI
-const FRAME_SCALE = 4.2;  // visual frame is 2x larger for user alignment
+const DPI_OUTPUT = 96; // final output DPI
+const FRAME_SCALE = 13.5;  // visual frame is 2x larger for user alignment
 
 function cmToPx(cm, dpi) {
-  return Math.round((cm / 2.54) * dpi);
+  var n = 3; // use 3 digits after decimal point (1mm resolution)
+  var cpi = 2.54; // centimeters per inch
+  //var dpi = 96; // dots per inch
+  var ppd = window.devicePixelRatio; // pixels per dot
+  return Math.round((dpi * cm) / 2.54);
+  //return Math.round((cm / 2.54) * (dpi*window.devicePixelRatio));
 }
 
 // Set frame size visually scaled for easier alignment
@@ -55,23 +60,34 @@ function captureImage() {
   const relW = frameRect.width / videoRect.width;
   const relH = frameRect.height / videoRect.height;
 
-  const cropX = relX * video.videoWidth;
-  const cropY = relY * video.videoHeight;
+  const cropX = 0;
+  const cropY = 0;
   const cropW = relW * video.videoWidth;
   const cropH = relH * video.videoHeight;
 
-  // Final output size (strict dimension)
-  const outputW = cmToPx(sizeCm[currentMode].width, DPI_OUTPUT);
-  const outputH = cmToPx(sizeCm[currentMode].height, DPI_OUTPUT);
-
-  canvas.width = outputW;
-  canvas.height = outputH;
+  canvas.width = cropW;
+  canvas.height = cropH;
 
   ctx.drawImage(
     video,
-    cropX, cropY, cropW, cropH,
-    0, 0, outputW, outputH
+    cropX, cropY, cropW, cropH,   // crop area from video
+    0, 0, cropW, cropH            // draw it as-is, same size
   );
+
+  // Final output size (strict dimension)
+  // const outputW = cmToPx(sizeCm[currentMode].width, DPI_OUTPUT);
+  // const outputH = cmToPx(sizeCm[currentMode].height, DPI_OUTPUT);
+
+  // canvas.width = outputW;
+  // canvas.height = outputH;
+
+  
+
+  // ctx.drawImage(
+  //   video,
+  //   cropX, cropY, cropW, cropH,
+  //   0, 0, outputW, outputH
+  // );
 
   const dataURL = canvas.toDataURL("image/png");
   resultImg.src = dataURL;
