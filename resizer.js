@@ -66,51 +66,64 @@ function captureAndResize() {
   const videoRect = video.getBoundingClientRect();
   const frameRect = frame.getBoundingClientRect();
 
-  // Validate video dimensions
+  // Check if video has proper resolution
   if (!video.videoWidth || !video.videoHeight) {
-    alert("Video not ready.");
+    alert("Video dimensions not ready.");
     return;
   }
 
-  // Scale factor: displayed video size → actual video resolution
+  // Calculate scale between displayed video and real resolution
   const scaleX = video.videoWidth / videoRect.width;
   const scaleY = video.videoHeight / videoRect.height;
 
-  // Frame position relative to video (scaled up to video resolution)
+  // Get coordinates of the frame in video resolution
   const sx = (frameRect.left - videoRect.left) * scaleX;
   const sy = (frameRect.top - videoRect.top) * scaleY;
   const sw = frameRect.width * scaleX;
   const sh = frameRect.height * scaleY;
 
-  // Final output size in pixels (based on cm)
+  // Final output size
   const outputWidth = cmToPx(sizeCm[currentMode].width);
   const outputHeight = cmToPx(sizeCm[currentMode].height);
 
-  // Resize canvas
+  console.log("video.videoWidth:", video.videoWidth);
+  console.log("video.clientWidth:", video.clientWidth);
+  console.log("scaleX:", scaleX, "scaleY:", scaleY);
+  console.log("Crop from:", sx, sy, sw, sh);
+  console.log("Output size:", outputWidth, outputHeight);
+
+  // Sanity check dimensions
+  if (sw <= 0 || sh <= 0 || outputWidth <= 0 || outputHeight <= 0) {
+    alert("Invalid capture area or output size.");
+    return;
+  }
+
+  // Setup canvas
   canvas.width = outputWidth;
   canvas.height = outputHeight;
-
   const ctx = canvas.getContext("2d");
-
-  // Clear previous frame
   ctx.clearRect(0, 0, outputWidth, outputHeight);
 
-  // Draw the cropped video region into the resized canvas
+  // Crop and resize from video to canvas
   ctx.drawImage(
-    video,          // Source: video feed
-    sx, sy, sw, sh, // Source cropping (from video)
-    0, 0,           // Destination top-left
-    outputWidth, outputHeight // Destination size (resized)
+    video,
+    sx, sy, sw, sh,
+    0, 0, outputWidth, outputHeight
   );
 
-  // Show the result
   const dataURL = canvas.toDataURL("image/png");
-  resultImg.src = dataURL;
 
-  // Download link
+  // Check if anything was drawn
+  if (canvas.toDataURL().length < 1000) {
+    alert("Nothing captured. Check scaling and crop area.");
+    return;
+  }
+
+  resultImg.src = dataURL;
   downloadLink.href = dataURL;
   downloadLink.style.display = "inline-block";
 }
+
 
 
 // Handle mode button clicks
