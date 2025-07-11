@@ -25,28 +25,23 @@ function cmToPx(cm) {
 
 // Update frame size/position based on current mode and video container
 function updateFrame() {
+  const frameStyle = frame.style;
   const container = video.getBoundingClientRect();
 
-  // Frame size in px for output image:
-  const fw = cmToPx(sizeCm[currentMode].width);
-  const fh = cmToPx(sizeCm[currentMode].height);
+  // Convert size in cm to px at 300dpi
+  const targetWidth = cmToPx(sizeCm[currentMode].width);
+  const targetHeight = cmToPx(sizeCm[currentMode].height);
 
-  // We want to display the frame centered inside #camera-container (which is 320x426 CSS px),
-  // but the video’s actual resolution can be different from displayed size,
-  // so frame CSS size should match the displayed video size proportionally.
+  // Scale to match the displayed video size
+  const scaleX = video.clientWidth / video.videoWidth;
+  const scaleY = video.clientHeight / video.videoHeight;
 
-  // Calculate scale ratio from video native size to displayed size
-  const videoRatioX = video.videoWidth / video.clientWidth || 1;
-  const videoRatioY = video.videoHeight / video.clientHeight || 1;
+  const displayWidth = targetWidth * scaleX;
+  const displayHeight = targetHeight * scaleY;
 
-  // Frame CSS size in displayed px (scaled down)
-  // We scale output px by inverse of videoRatio, to map output image px to screen px
-  const displayFrameWidth = fw / videoRatioX;
-  const displayFrameHeight = fh / videoRatioY;
-
-  frame.style.width = `${displayFrameWidth}px`;
-  frame.style.height = `${displayFrameHeight}px`;
-  // Center the frame (already done by CSS transform translate(-50%, -50%))
+  frameStyle.width = `${displayWidth}px`;
+  frameStyle.height = `${displayHeight}px`;
+  frameStyle.display = 'block';
 }
 
 // Start camera
@@ -59,7 +54,8 @@ async function startCamera() {
     video.srcObject = stream;
 
     video.onloadedmetadata = () => {
-      updateFrame();
+      video.play();
+      setTimeout(updateFrame, 500); // Delay allows layout to settle
     };
   } catch (err) {
     alert('Error accessing camera: ' + err.message);
@@ -108,9 +104,8 @@ modeButtons.forEach(btn => {
     currentMode = btn.getAttribute('data-mode');
     modeButtons.forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    updateFrame();
-    downloadLink.style.display = 'none';
-    resultImg.src = '';
+
+    setTimeout(updateFrame, 100); // allow DOM layout to adjust
   });
 });
 
