@@ -65,29 +65,29 @@ function captureImage() {
   const cropW = relW * video.videoWidth;
   const cropH = relH * video.videoHeight;
 
-  canvas.width = cropW;
-  canvas.height = cropH;
+  const cropCanvas = document.createElement("canvas");
+  cropCanvas.width = cropW;
+  cropCanvas.height = cropH;
 
-  ctx.drawImage(
+  const cropCtx = cropCanvas.getContext("2d");
+  cropCtx.drawImage(
     video,
     cropX, cropY, cropW, cropH,   // crop area from video
     0, 0, cropW, cropH            // draw it as-is, same size
   );
 
   // Final output size (strict dimension)
-  // const outputW = cmToPx(sizeCm[currentMode].width, DPI_OUTPUT);
-  // const outputH = cmToPx(sizeCm[currentMode].height, DPI_OUTPUT);
+  const outputW = cmToPx(sizeCm[currentMode].width, DPI_OUTPUT);
+  const outputH = cmToPx(sizeCm[currentMode].height, DPI_OUTPUT);
 
-  // canvas.width = outputW;
-  // canvas.height = outputH;
+  canvas.width = outputW;
+  canvas.height = outputH;
 
-  
-
-  // ctx.drawImage(
-  //   video,
-  //   cropX, cropY, cropW, cropH,
-  //   0, 0, outputW, outputH
-  // );
+  ctx.drawImage(
+    cropCanvas,
+    0, 0, cropW, cropH,           // source is the full cropCanvas
+    0, 0, outputW, outputH        // scale down to final size
+  );
 
   const dataURL = canvas.toDataURL("image/png");
   resultImg.src = dataURL;
