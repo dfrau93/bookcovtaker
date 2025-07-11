@@ -119,7 +119,9 @@ modeButtons.forEach(btn => {
     currentMode = btn.getAttribute('data-mode');
     modeButtons.forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-
+    console.log("mode:", currentMode);
+    console.log("outputWidth:", cmToPx(sizeCm[currentMode].width));
+    console.log("outputHeight:", cmToPx(sizeCm[currentMode].height));
     setTimeout(updateFrame, 100); // allow DOM layout to adjust
   });
 });
