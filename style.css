@@ -54,15 +54,13 @@
     background-color: #0088ff;
   }
   
-  .camera-container {
+  #camera-container {
     position: relative;
-    width: 100%;
-    max-width: 360px;
+    width: 80%;
     aspect-ratio: 4 / 3; /* adjust if needed */
     margin: 0 auto 15px;
     background: black;
     overflow: hidden;
-    border-radius: 8px;
   }
   
   video {
@@ -74,15 +72,13 @@
   
   #frame {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 0;
+    left: 0;
     /* size will be set dynamically */
     border: 3px solid #00ff00;
     box-shadow: 0 0 0 50px rgba(0, 0, 0, 0.7);
-    transform: translate(-50%, -50%);
     pointer-events: none;
     transition: width 0.3s, height 0.3s;
-    border-radius: 6px;
   }
   
   .actions {
