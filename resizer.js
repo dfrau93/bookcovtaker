@@ -32,6 +32,8 @@ function updateFrame() {
 
   video.style.width = `${pxWidth}px`;
   video.style.height = `${pxHeight}px`;
+  video.setAttribute('width', pxWidth);
+  video.setAttribute('height', pxHeight);
 }
 
 // Start camera
