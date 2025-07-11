@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Book Cover Capture with Frame</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<h1>Book Cover Capture</h1>
+
+<div id="mode-buttons">
+  <button data-mode="front" class="mode-btn selected">Front</button>
+  <button data-mode="spine" class="mode-btn">Spine</button>
+  <button data-mode="back" class="mode-btn">Back</button>
+</div>
+
+<div id="camera-container">
+  <video id="video" autoplay playsinline></video>
+  <div id="frame"></div>
+</div>
+
+<button id="capture">Capture</button>
+
+<h2>Result:</h2>
+<canvas id="canvas" style="display:none;"></canvas>
+<img id="result" alt="Captured and resized image" />
+
+<a id="download-link" href="#" download="book_cover.png" style="display:none;">Download Image</a>
+
+<script src="resizer.js"></script>
+</body>
+</html>
