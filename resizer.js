@@ -1,120 +1,86 @@
-const video = document.getElementById('video');
-const frame = document.getElementById('frame');
-const captureBtn = document.getElementById('capture');
-const resultImg = document.getElementById('result');
-const canvas = document.getElementById('canvas');
-const downloadLink = document.getElementById('download-link');
-const modeButtons = document.querySelectorAll('.mode-btn');
-const originalWidth = video.videoWidth;
-const originalHeight = video.videoHight;
-const DPI = 300;
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const resultImg = document.getElementById("result");
+const downloadLink = document.getElementById("download-link");
+const modeButtons = document.querySelectorAll(".mode-btn");
+const cutout = document.getElementById("cutout");
 
-// Sizes in cm (width x height), per your request:
+let currentMode = "front";
+
 const sizeCm = {
   front: { width: 1.6, height: 2.1 },
   spine: { width: 0.3, height: 2.1 },
-  back: { width: 1.6, height: 2.1 },
+  back: { width: 1.6, height: 2.1 }
 };
 
-// Current mode
-let currentMode = 'front';
-
-// Convert cm to px based on DPI
 function cmToPx(cm) {
-  return Math.round((cm / 2.54) * DPI);
+  return Math.round((cm / 2.54) * 300); // 300 DPI for image crop
 }
 
-
-function updateFrame() {
-  const targetWidth = cmToPx(sizeCm[currentMode].width);
-  const targetHeight = cmToPx(sizeCm[currentMode].height);
-
-  const scaleX = video.clientWidth / video.videoWidth;
-  const scaleY = video.clientHeight / video.videoHeight;
-
-  const displayWidth = targetWidth * scaleX;
-  const displayHeight = targetHeight * scaleY;
-
-  frame.style.width = `${displayWidth}px`;
-  frame.style.height = `${displayHeight}px`;
-  frame.style.display = 'block';
-  frame.setAttribute('width', pxWidth);
-  frame.setAttribute('height', pxHeight);
-  frame.setAttribute('display', 'block');
+function cmToScreenPx(cm) {
+  return Math.round((cm / 2.54) * 96); // 96 DPI for screen display
 }
 
-// Start camera
-async function startCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' },
-      audio: false,
+function updateCutout() {
+  const container = document.getElementById("camera-container");
+  const { width, height } = sizeCm[currentMode];
+  const pxW = cmToScreenPx(width);
+  const pxH = cmToScreenPx(height);
+
+  // Center cutout in the video container
+  cutout.style.width = `${pxW}px`;
+  cutout.style.height = `${pxH}px`;
+  cutout.style.left = `calc(50% - ${pxW / 2}px)`;
+  cutout.style.top = `calc(50% - ${pxH / 2}px)`;
+}
+
+function startCamera() {
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => {
+      video.srcObject = stream;
+      video.onloadedmetadata = () => {
+        video.play();
+        updateCutout();
+      };
+    })
+    .catch(err => {
+      alert("Error accessing camera: " + err.message);
     });
-    video.srcObject = stream;
-
-    video.onloadedmetadata = () => {
-      video.play();
-      setTimeout(updateFrame, 500); // Delay allows layout to settle
-    };
-  } catch (err) {
-    alert('Error accessing camera: ' + err.message);
-  }
 }
 
 function captureAndResize() {
-  if (!video.videoWidth || !video.videoHeight) {
-    alert("Video not ready.");
-    return;
-  }
+  const { width, height } = sizeCm[currentMode];
+  const cropW = cmToPx(width);
+  const cropH = cmToPx(height);
 
-  // Output size in px
-  const outputWidth = cmToPx(sizeCm[currentMode].width);
-  const outputHeight = cmToPx(sizeCm[currentMode].height);
-
-  // Center crop from video
-  const sw = outputWidth;
-  const sh = outputHeight;
-  const sx = (video.videoWidth - sw) / 2;
-  const sy = (video.videoHeight - sh) / 2;
-
-  console.log("Fallback Crop:", sx, sy, sw, sh);
-
-  canvas.width = outputWidth;
-  canvas.height = outputHeight;
+  canvas.width = cropW;
+  canvas.height = cropH;
   const ctx = canvas.getContext("2d");
 
-  ctx.clearRect(0, 0, outputWidth, outputHeight);
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
+  const videoW = video.videoWidth;
+  const videoH = video.videoHeight;
+
+  // Find source crop: center of the video feed
+  const srcX = videoW / 2 - cropW / 2;
+  const srcY = videoH / 2 - cropH / 2;
+
+  ctx.drawImage(video, srcX, srcY, cropW, cropH, 0, 0, cropW, cropH);
 
   const dataURL = canvas.toDataURL("image/png");
-
-  if (dataURL.length < 1000) {
-    alert("Still no capture — video too small?");
-    return;
-  }
-
   resultImg.src = dataURL;
   downloadLink.href = dataURL;
   downloadLink.style.display = "inline-block";
 }
 
+document.getElementById("capture-btn").addEventListener("click", captureAndResize);
 
-
-
-// Handle mode button clicks
 modeButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    currentMode = btn.getAttribute('data-mode');
-    modeButtons.forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    console.log("mode:", currentMode);
-    console.log("outputWidth:", cmToPx(sizeCm[currentMode].width));
-    console.log("outputHeight:", cmToPx(sizeCm[currentMode].height));
-    setTimeout(updateFrame, 100); // allow DOM layout to adjust
+  btn.addEventListener("click", () => {
+    modeButtons.forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    currentMode = btn.getAttribute("data-mode");
+    updateCutout();
   });
 });
 
-captureBtn.addEventListener('click', captureAndResize);
-
-// Initialize
 startCamera();
