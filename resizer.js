@@ -63,59 +63,34 @@ async function startCamera() {
 }
 
 function captureAndResize() {
-  const videoRect = video.getBoundingClientRect();
-  const frameRect = frame.getBoundingClientRect();
-
-  // Check if video has proper resolution
   if (!video.videoWidth || !video.videoHeight) {
-    alert("Video dimensions not ready.");
+    alert("Video not ready.");
     return;
   }
 
-  // Calculate scale between displayed video and real resolution
-  const scaleX = video.videoWidth / videoRect.width;
-  const scaleY = video.videoHeight / videoRect.height;
-
-  // Get coordinates of the frame in video resolution
-  const sx = (frameRect.left - videoRect.left) * scaleX;
-  const sy = (frameRect.top - videoRect.top) * scaleY;
-  const sw = frameRect.width * scaleX;
-  const sh = frameRect.height * scaleY;
-
-  // Final output size
+  // Output size in px
   const outputWidth = cmToPx(sizeCm[currentMode].width);
   const outputHeight = cmToPx(sizeCm[currentMode].height);
 
-  console.log("video.videoWidth:", video.videoWidth);
-  console.log("video.clientWidth:", video.clientWidth);
-  console.log("scaleX:", scaleX, "scaleY:", scaleY);
-  console.log("Crop from:", sx, sy, sw, sh);
-  console.log("Output size:", outputWidth, outputHeight);
+  // Center crop from video
+  const sw = outputWidth;
+  const sh = outputHeight;
+  const sx = (video.videoWidth - sw) / 2;
+  const sy = (video.videoHeight - sh) / 2;
 
-  // Sanity check dimensions
-  if (sw <= 0 || sh <= 0 || outputWidth <= 0 || outputHeight <= 0) {
-    alert("Invalid capture area or output size.");
-    return;
-  }
+  console.log("Fallback Crop:", sx, sy, sw, sh);
 
-  // Setup canvas
   canvas.width = outputWidth;
   canvas.height = outputHeight;
   const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, outputWidth, outputHeight);
 
-  // Crop and resize from video to canvas
-  ctx.drawImage(
-    video,
-    sx, sy, sw, sh,
-    0, 0, outputWidth, outputHeight
-  );
+  ctx.clearRect(0, 0, outputWidth, outputHeight);
+  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
 
   const dataURL = canvas.toDataURL("image/png");
 
-  // Check if anything was drawn
-  if (canvas.toDataURL().length < 1000) {
-    alert("Nothing captured. Check scaling and crop area.");
+  if (dataURL.length < 1000) {
+    alert("Still no capture — video too small?");
     return;
   }
 
@@ -123,6 +98,7 @@ function captureAndResize() {
   downloadLink.href = dataURL;
   downloadLink.style.display = "inline-block";
 }
+
 
 
 
