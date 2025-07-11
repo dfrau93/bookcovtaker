@@ -1,86 +1,141 @@
 const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
-const resultImg = document.getElementById("result");
+const frame = document.getElementById("frame");
+const captureBtn = document.getElementById("capture-btn");
 const downloadLink = document.getElementById("download-link");
+const resultImg = document.getElementById("result");
 const modeButtons = document.querySelectorAll(".mode-btn");
-const cutout = document.getElementById("cutout");
 
-let currentMode = "front";
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
 
+let currentMode = "front"; // default mode
+
+// Sizes in cm (height x width)
 const sizeCm = {
-  front: { width: 1.6, height: 2.1 },
-  spine: { width: 0.3, height: 2.1 },
-  back: { width: 1.6, height: 2.1 }
+  front: { width: 2.1, height: 1.6 },  // 2.1cm wide x 1.6cm high (front/back)
+  back: { width: 2.1, height: 1.6 },
+  spine: { width: 2.1, height: 0.3 }
 };
 
-function cmToPx(cm) {
-  return Math.round((cm / 2.54) * 300); // 300 DPI for image crop
+const DPI_CAPTURE = 300; // capture at high dpi for quality
+const DPI_OUTPUT = 300;  // final output dpi (downscale to this)
+
+// Scale factor to capture a bigger area than output
+const SCALE_FACTOR = 1;
+
+function cmToPx(cm, dpi) {
+  return Math.round((cm / 2.54) * dpi);
 }
 
-function cmToScreenPx(cm) {
-  return Math.round((cm / 2.54) * 96); // 96 DPI for screen display
+// Set frame size based on current mode and scale factor
+function updateFrame() {
+  const baseWidthPx = cmToPx(sizeCm[currentMode].width, DPI_OUTPUT);
+  const baseHeightPx = cmToPx(sizeCm[currentMode].height, DPI_OUTPUT);
+
+  const scaledWidth = baseWidthPx * SCALE_FACTOR;
+  const scaledHeight = baseHeightPx * SCALE_FACTOR;
+
+  // Because video is width 100%, scale frame size to video element width and height
+  // Calculate ratio between video native size and CSS size to scale frame accordingly
+
+  const videoCSSWidth = video.clientWidth;
+  const videoCSSHeight = video.clientHeight;
+
+  // Calculate the frame size relative to the displayed video size
+  // Video native width and height (videoWidth, videoHeight) could be different aspect ratio
+  const videoAspectRatio = video.videoWidth / video.videoHeight;
+  const cssAspectRatio = videoCSSWidth / videoCSSHeight;
+
+  // We'll size the frame relative to video CSS size with scale factor
+  // So frame width = video width * (captureWidthInVideoPixels / video.videoWidth)
+  // Because we capture the center crop, the frame will be smaller or equal to video size
+
+  // Compute relative capture rect size in % of video native resolution:
+  const captureWidthVideoPx = cmToPx(sizeCm[currentMode].width, DPI_CAPTURE) * SCALE_FACTOR;
+  const captureHeightVideoPx = cmToPx(sizeCm[currentMode].height, DPI_CAPTURE) * SCALE_FACTOR;
+
+  const widthRatio = captureWidthVideoPx / video.videoWidth;
+  const heightRatio = captureHeightVideoPx / video.videoHeight;
+
+  // Frame size in CSS pixels
+  const frameWidth = videoCSSWidth * widthRatio;
+  const frameHeight = videoCSSHeight * heightRatio;
+
+  frame.style.width = frameWidth + "px";
+  frame.style.height = frameHeight + "px";
 }
 
-function updateCutout() {
-  const container = document.getElementById("camera-container");
-  const { width, height } = sizeCm[currentMode];
-  const pxW = cmToScreenPx(width);
-  const pxH = cmToScreenPx(height);
-
-  // Center cutout in the video container
-  cutout.style.width = `${pxW}px`;
-  cutout.style.height = `${pxH}px`;
-  cutout.style.left = `calc(50% - ${pxW / 2}px)`;
-  cutout.style.top = `calc(50% - ${pxH / 2}px)`;
+// Set active mode button UI
+function updateModeUI() {
+  modeButtons.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.mode === currentMode);
+  });
+  captureBtn.disabled = !video.srcObject;
+  updateFrame();
 }
 
-function startCamera() {
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then(stream => {
-      video.srcObject = stream;
-      video.onloadedmetadata = () => {
-        video.play();
-        updateCutout();
-      };
-    })
-    .catch(err => {
-      alert("Error accessing camera: " + err.message);
+// Handle mode button click
+modeButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    currentMode = btn.dataset.mode;
+    updateModeUI();
+  });
+});
+
+// Start camera stream
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
     });
+    video.srcObject = stream;
+
+    video.addEventListener("loadedmetadata", () => {
+      updateFrame();
+      captureBtn.disabled = false;
+    });
+  } catch (e) {
+    alert("Could not start camera: " + e.message);
+  }
 }
 
-function captureAndResize() {
-  const { width, height } = sizeCm[currentMode];
-  const cropW = cmToPx(width);
-  const cropH = cmToPx(height);
+// Capture function: capture bigger area, then downscale to output size
+function captureImage() {
+  const captureWidthPx = cmToPx(sizeCm[currentMode].width, DPI_CAPTURE) * SCALE_FACTOR;
+  const captureHeightPx = cmToPx(sizeCm[currentMode].height, DPI_CAPTURE) * SCALE_FACTOR;
 
-  canvas.width = cropW;
-  canvas.height = cropH;
-  const ctx = canvas.getContext("2d");
+  const outputWidthPx = cmToPx(sizeCm[currentMode].width, DPI_OUTPUT);
+  const outputHeightPx = cmToPx(sizeCm[currentMode].height, DPI_OUTPUT);
 
-  const videoW = video.videoWidth;
-  const videoH = video.videoHeight;
+  canvas.width = outputWidthPx;
+  canvas.height = outputHeightPx;
 
-  // Find source crop: center of the video feed
-  const srcX = videoW / 2 - cropW / 2;
-  const srcY = videoH / 2 - cropH / 2;
+  // Calculate source rect on video (centered)
+  const videoWidth = video.videoWidth;
+  const videoHeight = video.videoHeight;
 
-  ctx.drawImage(video, srcX, srcY, cropW, cropH, 0, 0, cropW, cropH);
+  const srcX = Math.round((videoWidth - captureWidthPx) / 2);
+  const srcY = Math.round((videoHeight - captureHeightPx) / 2);
+
+  if (srcX < 0 || srcY < 0 || captureWidthPx > videoWidth || captureHeightPx > videoHeight) {
+    alert("Capture size is larger than video resolution.");
+    return;
+  }
+
+  ctx.drawImage(
+    video,
+    srcX, srcY, captureWidthPx, captureHeightPx,
+    0, 0, outputWidthPx, outputHeightPx
+  );
 
   const dataURL = canvas.toDataURL("image/png");
   resultImg.src = dataURL;
   downloadLink.href = dataURL;
   downloadLink.style.display = "inline-block";
+  downloadLink.download = `${currentMode}_cover.png`;
 }
 
-document.getElementById("capture-btn").addEventListener("click", captureAndResize);
-
-modeButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    modeButtons.forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-    currentMode = btn.getAttribute("data-mode");
-    updateCutout();
-  });
-});
+captureBtn.addEventListener("click", captureImage);
 
 startCamera();
+updateModeUI();
