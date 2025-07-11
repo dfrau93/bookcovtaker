@@ -62,41 +62,56 @@ async function startCamera() {
   }
 }
 
-// Capture the area inside the frame from the video, resize it to target px size
 function captureAndResize() {
-  // Get video and frame DOM rects
   const videoRect = video.getBoundingClientRect();
   const frameRect = frame.getBoundingClientRect();
 
-  // Calculate scale from displayed video size to video native resolution
+  // Validate video dimensions
+  if (!video.videoWidth || !video.videoHeight) {
+    alert("Video not ready.");
+    return;
+  }
+
+  // Scale factor: displayed video size → actual video resolution
   const scaleX = video.videoWidth / videoRect.width;
   const scaleY = video.videoHeight / videoRect.height;
 
-  // Calculate cropping coords relative to video native pixels
+  // Frame position relative to video (scaled up to video resolution)
   const sx = (frameRect.left - videoRect.left) * scaleX;
   const sy = (frameRect.top - videoRect.top) * scaleY;
   const sw = frameRect.width * scaleX;
   const sh = frameRect.height * scaleY;
 
-  // Set canvas to output size (final desired pixel dimensions)
+  // Final output size in pixels (based on cm)
   const outputWidth = cmToPx(sizeCm[currentMode].width);
   const outputHeight = cmToPx(sizeCm[currentMode].height);
+
+  // Resize canvas
   canvas.width = outputWidth;
   canvas.height = outputHeight;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
-  // Draw cropped part from video, scaled to final size
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
+  // Clear previous frame
+  ctx.clearRect(0, 0, outputWidth, outputHeight);
 
-  // Show result as image
-  const dataURL = canvas.toDataURL('image/png');
+  // Draw the cropped video region into the resized canvas
+  ctx.drawImage(
+    video,          // Source: video feed
+    sx, sy, sw, sh, // Source cropping (from video)
+    0, 0,           // Destination top-left
+    outputWidth, outputHeight // Destination size (resized)
+  );
+
+  // Show the result
+  const dataURL = canvas.toDataURL("image/png");
   resultImg.src = dataURL;
 
-  // Show download link
+  // Download link
   downloadLink.href = dataURL;
-  downloadLink.style.display = 'inline-block';
+  downloadLink.style.display = "inline-block";
 }
+
 
 // Handle mode button clicks
 modeButtons.forEach(btn => {
