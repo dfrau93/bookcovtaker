@@ -1,5 +1,5 @@
 const video = document.getElementById('video');
-const frame = document.getElementById('frame');
+//const frame = document.getElementById('frame');
 const captureBtn = document.getElementById('capture');
 const resultImg = document.getElementById('result');
 const canvas = document.getElementById('canvas');
@@ -25,7 +25,7 @@ function cmToPx(cm) {
 
 // Update frame size/position based on current mode and video container
 function updateFrame() {
-  const frameStyle = frame.style;
+  const frameStyle = video.style;
   const container = video.getBoundingClientRect();
 
   // Convert size in cm to px at 300dpi
@@ -41,7 +41,6 @@ function updateFrame() {
 
   frameStyle.width = `${displayWidth}px`;
   frameStyle.height = `${displayHeight}px`;
-  frameStyle.display = 'block';
 }
 
 // Start camera
