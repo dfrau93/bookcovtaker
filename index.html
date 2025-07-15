@@ -16,19 +16,16 @@
   <div id="camera-container">
     <video id="video" autoplay playsinline muted></video>
     <div id="frame"></div>
+    <div id="flash-overlay"></div>
   </div>
 
   <div class="actions">
     <button id="capture-btn">Capture</button>
-    <a id="download-link" download="book-image.png">Download</a>
+    <!--<a id="download-link" download="book-image.png">Download</a>-->
     <button id="clear-btn">Clear All</button>
   </div>
-<!--
-    <h3>High-Res Crop:</h3>
-    <img id="hires-img" class="preview" alt="High-Res Result"/>
--->
-    <h3>Resized Output (e.g. for Print):</h3>
-    <img id="output-img" class="preview" alt="Final Result"/>
+
+  <img id="output-img" class="preview" alt="Final Result"/>
   </div>
 
   <canvas id="canvas" style="display: none;"></canvas>

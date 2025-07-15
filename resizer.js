@@ -1,7 +1,7 @@
 const video = document.getElementById("video");
 const frame = document.getElementById("frame");
 const captureBtn = document.getElementById("capture-btn");
-const downloadLink = document.getElementById("download-link");
+//const downloadLink = document.getElementById("download-link");
 const clearBtn = document.getElementById("clear-btn");
 const outputImg = document.getElementById("output-img");
 const modeButtons = document.querySelectorAll(".mode-btn");
@@ -72,9 +72,9 @@ function generateCombinedImage() {
 
     const finalDataURL = combinedCanvas.toDataURL("image/png");
     outputImg.src = finalDataURL;
-    downloadLink.href = finalDataURL;
-    downloadLink.download = "book_cover_combined.png";
-    downloadLink.style.display = "inline-block";
+    //downloadLink.href = finalDataURL;
+    //downloadLink.download = "book_cover_combined.png";
+    //downloadLink.style.display = "inline-block";
   });
 }
 
@@ -108,6 +108,7 @@ function captureImage() {
     alert("Camera not ready.");
     return;
   }
+  flashScreen();
 
   const captureW = cmToPx(sizeCm[currentMode].width) * FRAME_SCALE;
   const captureH = cmToPx(sizeCm[currentMode].height) * FRAME_SCALE;
@@ -211,10 +212,16 @@ clearBtn.addEventListener("click", () => {
 
   // Clear the output preview and download
   outputImg.src = "";
-  downloadLink.href = "";
-  downloadLink.style.display = "none";
+  //downloadLink.href = "";
+  //downloadLink.style.display = "none";
 });
-
+function flashScreen() {
+  const flash = document.getElementById("flash-overlay");
+  flash.style.opacity = "1";
+  setTimeout(() => {
+    flash.style.opacity = "0";
+  }, 100); // Duration of flash
+}
 
 startCamera();
 updateModeUI();
