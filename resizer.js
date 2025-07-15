@@ -13,9 +13,9 @@ let currentMode = "1front"; // default mode
 
 // Sizes in cm (width x height for display and final output)
 const sizeCm = {
-  "1front": { width: 1.6, height: 2.1 },
-  "2spine": { width: 0.3, height: 2.1 },
-  "3back": { width: 1.6, height: 2.1 }
+  "1front": { width: 1.5, height: 2.2 },
+  "2spine": { width: 0.3, height: 2.2 },
+  "3back": { width: 1.5, height: 2.2 }
 };
 
 const images = {
