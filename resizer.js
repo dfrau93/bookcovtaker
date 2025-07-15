@@ -213,8 +213,12 @@ clearBtn.addEventListener("click", () => {
 
   // Clear the output preview and download
   // Clear the image properly
-  outputImg.removeAttribute("src");
-  outputImg.setAttribute("src", "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==");
+  const newImg = document.createElement("img");
+  newImg.id = "output-img";
+  newImg.className = "preview";
+
+  const oldImg = document.getElementById("output-img");
+  oldImg.replaceWith(newImg);
 
   //downloadLink.href = "";
   //downloadLink.style.display = "none";
