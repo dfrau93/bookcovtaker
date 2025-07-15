@@ -2,8 +2,7 @@ const video = document.getElementById("video");
 const frame = document.getElementById("frame");
 const captureBtn = document.getElementById("capture-btn");
 const downloadLink = document.getElementById("download-link");
-//const resultImg = document.getElementById("result");
-//const hiresImg = document.getElementById("hires-img");
+const clearBtn = document.getElementById("clear-btn");
 const outputImg = document.getElementById("output-img");
 const modeButtons = document.querySelectorAll(".mode-btn");
 
@@ -200,6 +199,22 @@ async function startCamera() {
     alert("Could not start camera: " + e.message);
   }
 }
+clearBtn.addEventListener("click", () => {
+  // Reset stored images
+  for (let key in images) {
+    images[key] = {
+      width: 0,
+      height: 0,
+      dataUrl: null
+    };
+  }
+
+  // Clear the output preview and download
+  outputImg.src = "";
+  downloadLink.href = "";
+  downloadLink.style.display = "none";
+});
+
 
 startCamera();
 updateModeUI();
