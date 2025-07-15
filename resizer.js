@@ -132,16 +132,16 @@ function captureImage() {
   //hiresImg.src = hiresDataURL;
 
   // Resize to final output size
-  const outputW = cmToPx(sizeCm[currentMode].width);
-  const outputH = cmToPx(sizeCm[currentMode].height);
+  //const outputW = cmToPx(sizeCm[currentMode].width);
+  //const outputH = cmToPx(sizeCm[currentMode].height);
 
-  const outputCanvas = document.createElement("canvas");
-  outputCanvas.width = outputW;
-  outputCanvas.height = outputH;
+  //const outputCanvas = document.createElement("canvas");
+  //outputCanvas.width = outputW;
+  //outputCanvas.height = outputH;
 
-  const outputCtx = outputCanvas.getContext("2d");
-  outputCtx.drawImage(cropCanvas, 0, 0, captureW, captureH, 0, 0, outputW, outputH);
-  const outputDataUrl = outputCanvas.toDataURL("image/png");
+  //const outputCtx = outputCanvas.getContext("2d");
+  //outputCtx.drawImage(cropCanvas, 0, 0, captureW, captureH, 0, 0, outputW, outputH);
+  //const outputDataUrl = outputCanvas.toDataURL("image/png");
   //outputImg.src = outputCanvas.toDataURL("image/png");
   //outputImg.style.width = `${sizeCm[currentMode].width}cm`;
   //outputImg.style.height = `${sizeCm[currentMode].height}cm`;
@@ -188,9 +188,14 @@ async function startCamera() {
     video.srcObject = stream;
 
     video.addEventListener("loadedmetadata", () => {
-      updateFrame();
-      captureBtn.disabled = false;
-    });
+    const waitForVideoReady = setInterval(() => {
+      if (video.videoWidth && video.videoHeight) {
+        clearInterval(waitForVideoReady);
+        updateFrame();
+        captureBtn.disabled = false;
+      }
+    }, 100);
+  });
   } catch (e) {
     alert("Could not start camera: " + e.message);
   }
