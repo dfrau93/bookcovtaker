@@ -3,7 +3,7 @@ const frame = document.getElementById("frame");
 const captureBtn = document.getElementById("capture-btn");
 //const downloadLink = document.getElementById("download-link");
 const clearBtn = document.getElementById("clear-btn");
-const outputImg = document.getElementById("output-img");
+outputImg = document.getElementById("output-img");
 const modeButtons = document.querySelectorAll(".mode-btn");
 
 const canvas = document.createElement("canvas");
@@ -216,10 +216,11 @@ clearBtn.addEventListener("click", () => {
   const newImg = document.createElement("img");
   newImg.id = "output-img";
   newImg.className = "preview";
+  newImg.src = '';
 
   const oldImg = document.getElementById("output-img");
   oldImg.replaceWith(newImg);
-
+  outputImg = document.getElementById("output-img");
   //downloadLink.href = "";
   //downloadLink.style.display = "none";
 });
