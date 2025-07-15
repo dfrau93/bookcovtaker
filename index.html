@@ -8,9 +8,9 @@
 </head>
 <body>
   <div class="controls">
-    <button class="mode-btn selected" data-mode="front">Front</button>
-    <button class="mode-btn" data-mode="spine">Spine</button>
-    <button class="mode-btn" data-mode="back">Back</button>
+    <button class="mode-btn selected" data-mode="1front">Front</button>
+    <button class="mode-btn" data-mode="2spine">Spine</button>
+    <button class="mode-btn" data-mode="3back">Back</button>
   </div>
 
   <div id="camera-container">
@@ -23,9 +23,11 @@
     <a id="download-link" download="book-image.png">Download</a>
   </div>
 
-  <div class="preview">
-    <h3>Preview:</h3>
-    <img id="result" alt="Captured image preview" />
+    <h3>High-Res Crop:</h3>
+    <img id="hires-img" class="preview" alt="High-Res Result"/>
+
+    <h3>Resized Output (e.g. for Print):</h3>
+    <img id="output-img" class="preview" alt="Final Result"/>
   </div>
 
   <canvas id="canvas" style="display: none;"></canvas>

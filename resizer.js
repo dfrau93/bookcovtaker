@@ -2,28 +2,30 @@ const video = document.getElementById("video");
 const frame = document.getElementById("frame");
 const captureBtn = document.getElementById("capture-btn");
 const downloadLink = document.getElementById("download-link");
-const resultImg = document.getElementById("result");
+//const resultImg = document.getElementById("result");
+const hiresImg = document.getElementById("hires-img");
+const outputImg = document.getElementById("output-img");
 const modeButtons = document.querySelectorAll(".mode-btn");
 
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 
-let currentMode = "front"; // default mode
+let currentMode = "1front"; // default mode
 
 // Sizes in cm (width x height for display and final output)
 const sizeCm = {
-  front: { width: 1.6, height: 2.1 },
-  back: { width: 1.6, height: 2.1 },
-  spine: { width: 0.3, height: 2.1 }
+  "1front": { width: 1.6, height: 2.1 },
+  "2spine": { width: 0.3, height: 2.1 },
+  "3back": { width: 1.6, height: 2.1 }
 };
 
 const DPI_OUTPUT = 96; // final output DPI
 const FRAME_SCALE = 13.5;  // visual frame is 2x larger for user alignment
 
-function cmToPx(cm, dpi) {
+function cmToPx(cm) {
   var n = 3; // use 3 digits after decimal point (1mm resolution)
   var cpi = 2.54; // centimeters per inch
-  //var dpi = 96; // dots per inch
+  var dpi = DPI_OUTPUT; // dots per inch
   var ppd = window.devicePixelRatio; // pixels per dot
   return Math.round((dpi * cm) / 2.54);
   //return Math.round((cm / 2.54) * (dpi*window.devicePixelRatio));
@@ -37,8 +39,8 @@ function updateFrame() {
   const videoCSSHeight = video.clientHeight;
 
   const { width, height } = sizeCm[currentMode];
-  const frameWidthPx = cmToPx(width, DPI_OUTPUT) * FRAME_SCALE;
-  const frameHeightPx = cmToPx(height, DPI_OUTPUT) * FRAME_SCALE;
+  const frameWidthPx = cmToPx(width) * FRAME_SCALE;
+  const frameHeightPx = cmToPx(height) * FRAME_SCALE;
 
   const widthRatio = frameWidthPx / video.videoWidth;
   const heightRatio = frameHeightPx / video.videoHeight;
@@ -51,47 +53,47 @@ function updateFrame() {
 }
 
 // Capture exactly what is inside the frame, then scale it to output size
-function captureImage() {
-  const videoRect = video.getBoundingClientRect();
-  const frameRect = frame.getBoundingClientRect();
 
-  const relX = (frameRect.left - videoRect.left) / videoRect.width;
-  const relY = (frameRect.top - videoRect.top) / videoRect.height;
-  const relW = frameRect.width / videoRect.width;
-  const relH = frameRect.height / videoRect.height;
+function captureImage() {
+  if (!video.videoWidth || !video.videoHeight) {
+    alert("Camera not ready.");
+    return;
+  }
+
+  const captureW = cmToPx(sizeCm[currentMode].width) * FRAME_SCALE;
+  const captureH = cmToPx(sizeCm[currentMode].height) * FRAME_SCALE;
 
   const cropX = 0;
   const cropY = 0;
-  const cropW = relW * video.videoWidth;
-  const cropH = relH * video.videoHeight;
 
+  // High-res cropped image
   const cropCanvas = document.createElement("canvas");
-  cropCanvas.width = cropW;
-  cropCanvas.height = cropH;
-
+  cropCanvas.width = captureW;
+  cropCanvas.height = captureH;
   const cropCtx = cropCanvas.getContext("2d");
+
   cropCtx.drawImage(
     video,
-    cropX, cropY, cropW, cropH,   // crop area from video
-    0, 0, cropW, cropH            // draw it as-is, same size
+    cropX, cropY, captureW, captureH,
+    0, 0, captureW, captureH
   );
 
-  // Final output size (strict dimension)
-  const outputW = cmToPx(sizeCm[currentMode].width, DPI_OUTPUT);
-  const outputH = cmToPx(sizeCm[currentMode].height, DPI_OUTPUT);
+  const hiresDataURL = cropCanvas.toDataURL("image/png");
+  hiresImg.src = hiresDataURL;
 
-  canvas.width = outputW;
-  canvas.height = outputH;
+  // Resize to final output size
+  const outputW = cmToPx(sizeCm[currentMode].width);
+  const outputH = cmToPx(sizeCm[currentMode].height);
 
-  ctx.drawImage(
-    cropCanvas,
-    0, 0, cropW, cropH,           // source is the full cropCanvas
-    0, 0, outputW, outputH        // scale down to final size
-  );
+  const outputCanvas = document.createElement("canvas");
+  outputCanvas.width = outputW;
+  outputCanvas.height = outputH;
 
-  const dataURL = canvas.toDataURL("image/png");
-  resultImg.src = dataURL;
-  downloadLink.href = dataURL;
+  const outputCtx = outputCanvas.getContext("2d");
+  outputCtx.drawImage(cropCanvas, 0, 0, captureW, captureH, 0, 0, outputW, outputH);
+
+  outputImg.src = outputCanvas.toDataURL("image/png");
+  downloadLink.href = outputImg.src;
   downloadLink.download = `${currentMode}_cover.png`;
   downloadLink.style.display = "inline-block";
 }
