@@ -19,9 +19,9 @@ const sizeCm = {
 };
 
 const images = {
-  "1front": {width: 0, height: 0,dataUrl: null},
+  "3back": {width: 0, height: 0,dataUrl: null},
   "2spine": {width: 0, height: 0,dataUrl: null},
-  "3back": {width: 0, height: 0,dataUrl: null}
+  "1front": {width: 0, height: 0,dataUrl: null}
 };
 
 const DPI_OUTPUT = 96; // final output DPI
