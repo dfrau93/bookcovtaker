@@ -3,7 +3,7 @@ const frame = document.getElementById("frame");
 const captureBtn = document.getElementById("capture-btn");
 const downloadLink = document.getElementById("download-link");
 //const resultImg = document.getElementById("result");
-const hiresImg = document.getElementById("hires-img");
+//const hiresImg = document.getElementById("hires-img");
 const outputImg = document.getElementById("output-img");
 const modeButtons = document.querySelectorAll(".mode-btn");
 
@@ -129,7 +129,7 @@ function captureImage() {
   );
 
   const hiresDataURL = cropCanvas.toDataURL("image/png");
-  hiresImg.src = hiresDataURL;
+  //hiresImg.src = hiresDataURL;
 
   // Resize to final output size
   const outputW = cmToPx(sizeCm[currentMode].width);
@@ -149,9 +149,9 @@ function captureImage() {
   //downloadLink.download = `${currentMode}_cover.png`;
   //downloadLink.style.display = "inline-block";
   images[currentMode] = {
-    width: outputW,
-    height: outputH,
-    dataUrl: outputDataUrl
+    width: captureW, //outputW,
+    height: captureH, //outputH,
+    dataUrl: hiresDataURL
   };
   generateCombinedImage();
 }
