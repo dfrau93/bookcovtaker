@@ -37,7 +37,7 @@ function cmToPx(cm) {
 }
 
 function generateCombinedImage() {
-  const orderedKeys = ["1front", "2spine", "3back"];
+  const orderedKeys = ["3back", "2spine","1front" ];
   const parts = orderedKeys
     .map((key) => ({ ...images[key], key }))
     .filter((part) => part.dataUrl); // Only include parts that have been captured
