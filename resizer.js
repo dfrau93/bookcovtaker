@@ -19,6 +19,12 @@ const sizeCm = {
   "3back": { width: 1.6, height: 2.1 }
 };
 
+const images = {
+  "1front": {width: 0, height: 0,dataUrl: null},
+  "2spine": {width: 0, height: 0,dataUrl: null},
+  "3back": {width: 0, height: 0,dataUrl: null}
+};
+
 const DPI_OUTPUT = 96; // final output DPI
 const FRAME_SCALE = 13.5;  // visual frame is 2x larger for user alignment
 
@@ -30,6 +36,50 @@ function cmToPx(cm) {
   return Math.round((dpi * cm) / 2.54);
   //return Math.round((cm / 2.54) * (dpi*window.devicePixelRatio));
 }
+
+function generateCombinedImage() {
+  const orderedKeys = ["1front", "2spine", "3back"];
+  const parts = orderedKeys
+    .map((key) => ({ ...images[key], key }))
+    .filter((part) => part.dataUrl); // Only include parts that have been captured
+
+  if (parts.length === 0) {
+    console.warn("No images captured yet.");
+    return;
+  }
+
+  const totalWidth = parts.reduce((sum, part) => sum + part.width, 0);
+  const height = parts[0].height;
+
+  const combinedCanvas = document.createElement("canvas");
+  combinedCanvas.width = totalWidth;
+  combinedCanvas.height = height;
+  const combinedCtx = combinedCanvas.getContext("2d");
+
+  let xOffset = 0;
+
+  // Load each image and draw only after all are ready
+  Promise.all(parts.map(part => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ img, width: part.width });
+      img.src = part.dataUrl;
+    });
+  })).then((loadedImages) => {
+    loadedImages.forEach(({ img, width }) => {
+      combinedCtx.drawImage(img, xOffset, 0);
+      xOffset += width;
+    });
+
+    const finalDataURL = combinedCanvas.toDataURL("image/png");
+    outputImg.src = finalDataURL;
+    downloadLink.href = finalDataURL;
+    downloadLink.download = "book_cover_combined.png";
+    downloadLink.style.display = "inline-block";
+  });
+}
+
+
 
 // Set frame size visually scaled for easier alignment
 function updateFrame() {
@@ -91,12 +141,21 @@ function captureImage() {
 
   const outputCtx = outputCanvas.getContext("2d");
   outputCtx.drawImage(cropCanvas, 0, 0, captureW, captureH, 0, 0, outputW, outputH);
-
-  outputImg.src = outputCanvas.toDataURL("image/png");
-  downloadLink.href = outputImg.src;
-  downloadLink.download = `${currentMode}_cover.png`;
-  downloadLink.style.display = "inline-block";
+  const outputDataUrl = outputCanvas.toDataURL("image/png");
+  //outputImg.src = outputCanvas.toDataURL("image/png");
+  //outputImg.style.width = `${sizeCm[currentMode].width}cm`;
+  //outputImg.style.height = `${sizeCm[currentMode].height}cm`;
+  //downloadLink.href = outputImg.src;
+  //downloadLink.download = `${currentMode}_cover.png`;
+  //downloadLink.style.display = "inline-block";
+  images[currentMode] = {
+    width: outputW,
+    height: outputH,
+    dataUrl: outputDataUrl
+  };
+  generateCombinedImage();
 }
+
 
 // Switch modes (front/spine/back)
 function updateModeUI() {

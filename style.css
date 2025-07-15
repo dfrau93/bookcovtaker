@@ -100,8 +100,15 @@
     border: 2px solid #0088ff;
     display: block;
   }
+  #hires-img {
+    width: auto;
+    height: auto;
+    border: 0px solid #ccc;
+    display:block;
+  }
   #output-img {
-    width: 1.6cm;
-    height: 2.1cm;
-    border: 1px solid #ccc;
+    width: auto;
+    height: auto;
+    border: 0px solid #ccc;
+    display:block;
   }
