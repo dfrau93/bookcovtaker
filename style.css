@@ -74,7 +74,6 @@
     top: 0;
     left: 0;
     /* size will be set dynamically */
-    border: 0px solid #00ff00;
     box-shadow: 0 0 0 50px rgba(0, 0, 0, 0.8);
     pointer-events: none;
     transition: width 0.3s, height 0.3s;
