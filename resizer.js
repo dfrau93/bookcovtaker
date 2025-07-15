@@ -177,6 +177,7 @@ captureBtn.addEventListener("click", captureImage);
 
 // Start camera and update frame when ready
 async function startCamera() {
+  outputImg.setAttribute("src", "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==");
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
@@ -211,7 +212,10 @@ clearBtn.addEventListener("click", () => {
   }
 
   // Clear the output preview and download
-  outputImg.src = "";
+  // Clear the image properly
+  outputImg.removeAttribute("src");
+  outputImg.setAttribute("src", "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==");
+
   //downloadLink.href = "";
   //downloadLink.style.display = "none";
 });
